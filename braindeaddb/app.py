@@ -16,18 +16,18 @@ def _mkkey(data):
     return hashlib.sha1(data).hexdigest()
 
 
-@app.route('/', methods=['GET', 'PUT'])
+@app.route('/', methods=['GET', 'POST'])
 def listnew():
     if request.method == 'GET':
         return json.dumps({"keys": os.listdir(config.store)})
-    if request.method == 'PUT':
+    if request.method == 'POST':
         key = _mkkey(request.data)
         with open(_fname(key), 'wb+') as f:
             f.write(request.data)
             return key
 
 
-@app.route('/<key>', methods=['GET', 'POST', 'DELETE'])
+@app.route('/<key>', methods=['GET', 'PUT', 'DELETE'])
 def getset(key):
     fname = _fname(key)
     if not os.path.isfile(fname):
@@ -36,8 +36,8 @@ def getset(key):
     if request.method == 'GET':
         with open(fname, 'r') as f:
             return f.read()
-    if request.method == 'POST':
-        # ignores ancestor for now, making it almost the same as PUT to /
+    if request.method == 'PUT':
+        # ignores ancestor for now, making it almost the same as POST to /
         key = _mkkey(request.data)
         with open(_fname(key), 'wb+') as f:
             f.write(request.data)
